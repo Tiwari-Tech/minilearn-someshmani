@@ -14,108 +14,94 @@ export function CourseDetailPage() {
   const [activeTab, setActiveTab] = useState<Tab>('overview');
 
   const course = courses.find((c) => c.id === id);
-
-  // getCourseProgress is a pure selector — safe to call with empty string when course is missing;
-  // we return early before using the result if course is undefined.
   const { enrolled, currentLessonId } = getCourseProgress(course?.id ?? '');
 
   if (!course) {
     return (
       <div className="flex flex-col items-center justify-center py-32 text-center px-4">
-        <p className="text-6xl font-extrabold text-gray-700 mb-4">404</p>
-        <p className="text-gray-400 mb-6">Course not found.</p>
+        <p className="text-6xl font-extrabold text-[#1c1d1f] mb-4">404</p>
+        <p className="text-[#6a6f73] mb-6">Course not found.</p>
         <Link to="/" className="btn-primary">Browse all courses</Link>
       </div>
     );
   }
-  const totalLessons = course.sections.reduce((acc, s) => acc + s.lessons.length, 0);
-  const firstLessonId = course.sections[0]?.lessons[0]?.id ?? '';
 
-  const formatStudents = (n: number) =>
-    n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n);
-
-  // course is guaranteed non-null here (early return above handles the null case)
   const safeCourse = course;
+  const totalLessons = safeCourse.sections.reduce((acc, s) => acc + s.lessons.length, 0);
+  const firstLessonId = safeCourse.sections[0]?.lessons[0]?.id ?? '';
+  const formatStudents = (n: number) => n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n);
 
   function handleCTA() {
-    if (!enrolled) {
-      enroll(safeCourse.id, firstLessonId);
-    }
+    if (!enrolled) enroll(safeCourse.id, firstLessonId);
     const lessonId = currentLessonId ?? firstLessonId;
     navigate(`/courses/${safeCourse.id}/learn?lesson=${lessonId}`);
   }
 
   return (
-    <main className="min-h-screen">
-      {/* Hero */}
-      <section className={`relative bg-gradient-to-br ${course.gradient} overflow-hidden`}>
-        <div className="absolute inset-0 bg-black/50" />
-        <div className="absolute top-0 right-0 w-96 h-96 rounded-full bg-white/5 -translate-y-1/3 translate-x-1/3 blur-2xl" />
-        <div className="absolute bottom-0 left-0 w-64 h-64 rounded-full bg-black/20 translate-y-1/2 -translate-x-1/4 blur-xl" />
+    <main className="min-h-screen bg-white">
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-20">
-          <div className="max-w-3xl">
-            <nav className="flex items-center gap-2 text-sm text-white/60 mb-5">
-              <Link to="/" className="hover:text-white transition-colors">Catalog</Link>
-              <span>/</span>
-              <span className="text-white/80">{course.category}</span>
-              <span>/</span>
-              <span className="text-white truncate max-w-[180px]">{course.title}</span>
-            </nav>
+      {/* Dark hero */}
+      <section className="bg-[#1c1d1f] py-10 sm:py-14">
+        <div className="max-w-[1340px] mx-auto px-4 sm:px-6 lg:pr-[360px]">
+          {/* Breadcrumb */}
+          <nav className="flex items-center gap-1.5 text-xs text-[#cec0fc] mb-4 flex-wrap">
+            <Link to="/" className="hover:underline">Catalog</Link>
+            <span className="text-[#6a6f73]">/</span>
+            <span className="text-[#cec0fc]">{safeCourse.category}</span>
+            <span className="text-[#6a6f73]">/</span>
+            <span className="text-white/80 truncate max-w-[180px] sm:max-w-none">{safeCourse.title}</span>
+          </nav>
 
-            <div className="flex flex-wrap items-center gap-2 mb-4">
-              <span className="px-3 py-1 bg-white/15 backdrop-blur-sm border border-white/20 text-white text-xs font-semibold rounded-full">
-                {course.category}
-              </span>
-              <span className="px-3 py-1 bg-white/15 backdrop-blur-sm border border-white/20 text-white text-xs font-semibold rounded-full">
-                {course.level}
-              </span>
-            </div>
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white leading-tight mb-3 max-w-2xl">
+            {safeCourse.title}
+          </h1>
+          <p className="text-[#d1d7dc] text-sm sm:text-base mb-4 max-w-2xl leading-relaxed">
+            {safeCourse.headline}
+          </p>
 
-            <h1 className="text-3xl sm:text-4xl font-extrabold text-white leading-tight mb-3">
-              {course.title}
-            </h1>
-            <p className="text-white/80 text-lg mb-6 leading-relaxed">{course.headline}</p>
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-3">
+            <StarRating rating={safeCourse.rating} size="md" showCount={safeCourse.students} />
+            <span className="text-[#d1d7dc] text-xs">{formatStudents(safeCourse.students)} students</span>
+          </div>
 
-            <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-white/70 mb-6">
-              <StarRating rating={course.rating} size="md" />
-              <span>{formatStudents(course.students)} students</span>
-              <span>·</span>
-              <span>{course.totalHours}h total</span>
-              <span>·</span>
-              <span>{totalLessons} lessons</span>
-            </div>
+          <p className="text-[#d1d7dc] text-sm">
+            Created by{' '}
+            <span className="text-[#cec0fc] underline cursor-pointer hover:text-white">
+              {safeCourse.instructor.name}
+            </span>
+          </p>
 
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white font-bold text-sm shrink-0">
-                {course.instructor.name.charAt(0)}
-              </div>
-              <div>
-                <p className="text-white font-semibold text-sm">{course.instructor.name}</p>
-                <p className="text-white/60 text-xs">{course.instructor.title}</p>
-              </div>
-            </div>
+          <div className="flex flex-wrap gap-3 mt-4 text-xs text-[#d1d7dc]">
+            <span className="flex items-center gap-1">
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126z"/></svg>
+              Last updated 2024
+            </span>
+            <span className="flex items-center gap-1">
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              Certificate of completion
+            </span>
           </div>
         </div>
       </section>
 
       {/* Body */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <div className="flex flex-col lg:flex-row gap-10">
+      <div className="max-w-[1340px] mx-auto px-4 sm:px-6 py-8">
+        <div className="flex flex-col lg:flex-row gap-8">
 
-          {/* Left: tabs */}
+          {/* Left content */}
           <div className="flex-1 min-w-0">
-            <div className="flex border-b border-gray-800 mb-8" role="tablist">
+            {/* Tabs */}
+            <div className="flex border-b border-[#e8e8e8] mb-8" role="tablist">
               {(['overview', 'curriculum'] as Tab[]).map((tab) => (
                 <button
                   key={tab}
                   role="tab"
                   aria-selected={activeTab === tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`px-5 py-3 text-sm font-semibold capitalize border-b-2 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${
+                  className={`px-5 py-3 text-sm font-bold capitalize border-b-2 -mb-px transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#a435f0] ${
                     activeTab === tab
-                      ? 'border-indigo-500 text-indigo-400'
-                      : 'border-transparent text-gray-500 hover:text-gray-300'
+                      ? 'border-[#1c1d1f] text-[#1c1d1f]'
+                      : 'border-transparent text-[#6a6f73] hover:text-[#1c1d1f]'
                   }`}
                 >
                   {tab}
@@ -123,34 +109,34 @@ export function CourseDetailPage() {
               ))}
             </div>
 
+            {/* Overview */}
             {activeTab === 'overview' && (
               <div className="space-y-8">
-                <div>
-                  <h2 className="text-lg font-bold text-gray-100 mb-3">About this course</h2>
-                  <p className="text-gray-400 leading-relaxed">{course.description}</p>
-                </div>
-
-                <div>
-                  <h2 className="text-lg font-bold text-gray-100 mb-4">What you'll learn</h2>
-                  <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {course.sections.map((section) => (
-                      <li key={section.id} className="flex items-start gap-3">
-                        <span className="mt-0.5 w-5 h-5 rounded-full bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center shrink-0">
-                          <svg className="w-2.5 h-2.5 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                          </svg>
-                        </span>
-                        <span className="text-gray-300 text-sm">{section.title}</span>
+                {/* What you'll learn — Udemy's bordered box */}
+                <div className="border border-[#e8e8e8] rounded-lg p-5 sm:p-6">
+                  <h2 className="text-xl font-bold text-[#1c1d1f] mb-4">What you'll learn</h2>
+                  <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {safeCourse.sections.map((s) => (
+                      <li key={s.id} className="flex items-start gap-2">
+                        <svg className="w-4 h-4 text-[#1c1d1f] mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span className="text-sm text-[#1c1d1f]">{s.title}</span>
                       </li>
                     ))}
                   </ul>
                 </div>
 
                 <div>
-                  <h2 className="text-lg font-bold text-gray-100 mb-3">Topics</h2>
+                  <h2 className="text-xl font-bold text-[#1c1d1f] mb-3">Course description</h2>
+                  <p className="text-[#1c1d1f] text-sm leading-relaxed">{safeCourse.description}</p>
+                </div>
+
+                <div>
+                  <h2 className="text-xl font-bold text-[#1c1d1f] mb-3">Topics</h2>
                   <div className="flex flex-wrap gap-2">
-                    {course.tags.map((tag) => (
-                      <span key={tag} className="px-3 py-1.5 bg-gray-800 border border-gray-700 text-gray-300 text-xs font-medium rounded-lg">
+                    {safeCourse.tags.map((tag) => (
+                      <span key={tag} className="px-3 py-1.5 bg-[#f7f9fa] border border-[#e8e8e8] rounded-full text-[#1c1d1f] text-xs font-medium">
                         {tag}
                       </span>
                     ))}
@@ -158,78 +144,94 @@ export function CourseDetailPage() {
                 </div>
 
                 <div>
-                  <h2 className="text-lg font-bold text-gray-100 mb-4">Course includes</h2>
-                  <ul className="space-y-2.5">
+                  <h2 className="text-xl font-bold text-[#1c1d1f] mb-4">This course includes</h2>
+                  <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-[#1c1d1f]">
                     {[
-                      { icon: '🎬', label: `${course.totalHours} hours of on-demand video` },
-                      { icon: '📚', label: `${totalLessons} lessons across ${course.sections.length} sections` },
-                      { icon: '📝', label: `${course.quiz.length}-question final quiz` },
+                      { icon: '🎬', label: `${safeCourse.totalHours} hours on-demand video` },
+                      { icon: '📱', label: 'Access on mobile and desktop' },
+                      { icon: '📝', label: `${safeCourse.quiz.length}-question final quiz` },
                       { icon: '🏆', label: 'Certificate of completion' },
                       { icon: '♾️', label: 'Full lifetime access' },
+                      { icon: '📚', label: `${totalLessons} lessons` },
                     ].map(({ icon, label }) => (
-                      <li key={label} className="flex items-center gap-3 text-sm text-gray-400">
-                        <span className="text-base">{icon}</span>
-                        {label}
+                      <li key={label} className="flex items-center gap-2">
+                        <span>{icon}</span><span>{label}</span>
                       </li>
                     ))}
                   </ul>
                 </div>
+
+                <div>
+                  <h2 className="text-xl font-bold text-[#1c1d1f] mb-4">Instructor</h2>
+                  <div className="flex items-start gap-4">
+                    <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-[#a435f0] flex items-center justify-center text-white font-extrabold text-xl sm:text-2xl shrink-0">
+                      {safeCourse.instructor.name.charAt(0)}
+                    </div>
+                    <div>
+                      <p className="font-bold text-[#a435f0] text-base hover:underline cursor-pointer">
+                        {safeCourse.instructor.name}
+                      </p>
+                      <p className="text-sm text-[#6a6f73]">{safeCourse.instructor.title}</p>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
 
+            {/* Curriculum */}
             {activeTab === 'curriculum' && (
               <div>
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-lg font-bold text-gray-100">Course curriculum</h2>
-                  <span className="text-sm text-gray-500">
-                    {course.sections.length} sections · {totalLessons} lessons · {course.totalHours}h
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+                  <h2 className="text-xl font-bold text-[#1c1d1f]">Course content</h2>
+                  <span className="text-sm text-[#6a6f73]">
+                    {safeCourse.sections.length} sections · {totalLessons} lectures · {safeCourse.totalHours}h
                   </span>
                 </div>
-                <CurriculumAccordion sections={course.sections} />
+                <CurriculumAccordion sections={safeCourse.sections} />
               </div>
             )}
           </div>
 
-          {/* Right: sticky CTA card */}
-          <div className="lg:w-80 shrink-0">
-            <div className="sticky top-24 card p-6 space-y-5">
-              <div className={`h-36 rounded-lg bg-gradient-to-br ${course.gradient} flex items-center justify-center relative overflow-hidden`}>
-                <div className="absolute inset-0 bg-black/20" />
-                <svg className="relative z-10 w-12 h-12 text-white/80" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z" />
-                </svg>
+          {/* Sticky card — hidden on mobile (shown inline below hero on mobile) */}
+          <div className="lg:w-[300px] xl:w-[340px] shrink-0">
+            <div className="sticky top-20 border border-[#e8e8e8] rounded-lg shadow-lg bg-white overflow-hidden">
+              {/* Thumbnail */}
+              <div className={`w-full aspect-video bg-gradient-to-br ${safeCourse.gradient} relative`}>
+                <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                  <div className="w-14 h-14 rounded-full bg-black/40 flex items-center justify-center">
+                    <svg className="w-6 h-6 text-white ml-0.5" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+                    </svg>
+                  </div>
+                </div>
               </div>
 
-              <button onClick={handleCTA} className="btn-primary w-full py-3 text-base">
-                {enrolled ? '▶ Continue Learning' : 'Enroll Now — Free'}
-              </button>
-
-              <ul className="space-y-2 text-sm">
-                {[
-                  { label: 'Rating', value: `${course.rating} / 5.0` },
-                  { label: 'Students', value: formatStudents(course.students) },
-                  { label: 'Total hours', value: `${course.totalHours}h` },
-                  { label: 'Lessons', value: String(totalLessons) },
-                  { label: 'Level', value: course.level },
-                  { label: 'Quiz', value: `${course.quiz.length} questions` },
-                ].map(({ label, value }) => (
-                  <li key={label} className="flex justify-between text-gray-400">
-                    <span>{label}</span>
-                    <span className="text-gray-200 font-medium">{value}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <div className="pt-4 border-t border-gray-800">
-                <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-3">Instructor</p>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-indigo-600/30 border border-indigo-500/30 flex items-center justify-center text-indigo-300 font-bold text-sm shrink-0">
-                    {course.instructor.name.charAt(0)}
-                  </div>
-                  <div>
-                    <p className="text-gray-200 font-semibold text-sm">{course.instructor.name}</p>
-                    <p className="text-gray-500 text-xs">{course.instructor.title}</p>
-                  </div>
+              <div className="p-5 space-y-4">
+                <p className="text-3xl font-extrabold text-[#1c1d1f]">Free</p>
+                <button onClick={handleCTA} className="btn-primary w-full py-3 text-base rounded-lg">
+                  {enrolled ? 'Go to course' : 'Enroll now'}
+                </button>
+                {!enrolled && (
+                  <p className="text-xs text-[#6a6f73] text-center">30-Day Money-Back Guarantee</p>
+                )}
+                <div className="space-y-2 pt-2">
+                  <p className="text-sm font-bold text-[#1c1d1f]">This course includes:</p>
+                  <ul className="space-y-1.5 text-sm text-[#1c1d1f]">
+                    {[
+                      { icon: '🎬', label: `${safeCourse.totalHours} hours of video` },
+                      { icon: '📚', label: `${totalLessons} lessons` },
+                      { icon: '📱', label: 'Mobile & desktop access' },
+                      { icon: '🏆', label: 'Certificate of completion' },
+                    ].map(({ icon, label }) => (
+                      <li key={label} className="flex items-center gap-2">
+                        <span>{icon}</span><span>{label}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="flex justify-center gap-4 pt-2 text-xs font-bold text-[#a435f0]">
+                  <button className="hover:underline">Share</button>
+                  <button className="hover:underline">Gift this course</button>
                 </div>
               </div>
             </div>

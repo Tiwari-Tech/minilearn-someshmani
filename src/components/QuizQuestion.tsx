@@ -2,7 +2,7 @@ interface QuizQuestionProps {
   question: string;
   options: readonly string[];
   selectedOption: string | null;
-  revealedAnswer: string | null; // set after Submit is clicked
+  revealedAnswer: string | null;
   onSelect: (option: string) => void;
 }
 
@@ -15,29 +15,28 @@ export function QuizQuestion({
 }: QuizQuestionProps) {
   return (
     <div className="space-y-5">
-      {/* Question text */}
-      <p className="text-lg font-semibold text-gray-100 leading-snug">{question}</p>
+      <p className="text-lg font-bold text-[#1c1d1f] leading-snug">{question}</p>
 
-      {/* Options */}
       <ul className="space-y-3" role="radiogroup" aria-label="Answer options">
         {options.map((option) => {
           const isSelected = selectedOption === option;
           const isCorrect = revealedAnswer === option;
           const isWrongPick = revealedAnswer !== null && isSelected && !isCorrect;
 
-          let stateClasses = '';
+          let border = 'border-[#d1d7dc] hover:border-[#1c1d1f]';
+          let bg = 'bg-white';
+          let text = 'text-[#1c1d1f]';
+
           if (revealedAnswer !== null) {
             if (isCorrect) {
-              stateClasses = 'border-emerald-500 bg-emerald-500/10 text-emerald-300';
+              border = 'border-[#1e6055]'; bg = 'bg-[#e5f5f3]'; text = 'text-[#1e6055]';
             } else if (isWrongPick) {
-              stateClasses = 'border-red-500 bg-red-500/10 text-red-300';
+              border = 'border-[#c0392b]'; bg = 'bg-[#fdf2f0]'; text = 'text-[#c0392b]';
             } else {
-              stateClasses = 'border-gray-800 bg-gray-900/50 text-gray-600 cursor-default';
+              border = 'border-[#d1d7dc]'; bg = 'bg-white'; text = 'text-[#6a6f73]';
             }
           } else if (isSelected) {
-            stateClasses = 'border-indigo-500 bg-indigo-500/10 text-indigo-200';
-          } else {
-            stateClasses = 'border-gray-700 bg-gray-900 text-gray-300 hover:border-gray-500 hover:bg-gray-800/60 cursor-pointer';
+            border = 'border-[#a435f0]'; bg = 'bg-[#f0e6ff]'; text = 'text-[#a435f0]';
           }
 
           return (
@@ -47,17 +46,17 @@ export function QuizQuestion({
                 aria-checked={isSelected}
                 disabled={revealedAnswer !== null}
                 onClick={() => onSelect(option)}
-                className={`w-full flex items-center gap-4 px-5 py-4 rounded-xl border text-left text-sm font-medium transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 disabled:cursor-default ${stateClasses}`}
+                className={`w-full flex items-center gap-4 px-4 py-3.5 border-2 text-left text-sm font-medium transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#a435f0] disabled:cursor-default ${border} ${bg} ${text}`}
               >
-                {/* Radio circle */}
+                {/* Radio indicator */}
                 <span className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
                   isCorrect && revealedAnswer !== null
-                    ? 'border-emerald-500 bg-emerald-500'
+                    ? 'border-[#1e6055] bg-[#1e6055]'
                     : isWrongPick
-                    ? 'border-red-500 bg-red-500'
+                    ? 'border-[#c0392b] bg-[#c0392b]'
                     : isSelected
-                    ? 'border-indigo-500 bg-indigo-500'
-                    : 'border-gray-600'
+                    ? 'border-[#a435f0] bg-[#a435f0]'
+                    : 'border-[#6a6f73]'
                 }`}>
                   {(isSelected || (isCorrect && revealedAnswer !== null)) && (
                     isWrongPick ? (
@@ -80,19 +79,17 @@ export function QuizQuestion({
 
       {/* Inline feedback */}
       {revealedAnswer !== null && (
-        <div className={`flex items-start gap-2 px-4 py-3 rounded-lg text-sm ${
+        <div className={`flex items-start gap-2 px-4 py-3 border text-sm font-medium ${
           selectedOption === revealedAnswer
-            ? 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-300'
-            : 'bg-red-500/10 border border-red-500/30 text-red-300'
+            ? 'bg-[#e5f5f3] border-[#1e6055] text-[#1e6055]'
+            : 'bg-[#fdf2f0] border-[#c0392b] text-[#c0392b]'
         }`}>
-          <span className="text-base shrink-0">
-            {selectedOption === revealedAnswer ? '✓' : '✗'}
+          <span className="shrink-0 font-bold">
+            {selectedOption === revealedAnswer ? '✓ Correct!' : '✗ Incorrect.'}
           </span>
-          <span>
-            {selectedOption === revealedAnswer
-              ? 'Correct!'
-              : `Incorrect. The correct answer is "${revealedAnswer}".`}
-          </span>
+          {selectedOption !== revealedAnswer && (
+            <span>The correct answer is <strong>"{revealedAnswer}"</strong>.</span>
+          )}
         </div>
       )}
     </div>

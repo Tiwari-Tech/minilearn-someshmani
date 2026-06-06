@@ -5,32 +5,18 @@ export default {
     extend: {
       fontFamily: {
         sans: ['Plus Jakarta Sans', 'sans-serif'],
-        display: ['Clash Display', 'Plus Jakarta Sans', 'sans-serif'],
       },
       colors: {
-        brand: {
-          50:  '#f0f4ff',
-          100: '#e0eaff',
-          200: '#c7d7fe',
-          300: '#a5b4fc',
-          400: '#818cf8',
-          500: '#6366f1',
-          600: '#4f46e5',
-          700: '#4338ca',
-          800: '#3730a3',
-          900: '#312e81',
+        udemy: {
+          purple: '#a435f0',
+          'purple-dark': '#8710d8',
+          'purple-light': '#f0e6ff',
+          dark: '#1c1d1f',
+          secondary: '#6a6f73',
+          border: '#d1d7dc',
+          surface: '#f7f9fa',
+          star: '#f4c430',
         },
-        surface: {
-          DEFAULT: '#0f0f13',
-          50:  '#fafafa',
-          100: '#f5f5f7',
-          200: '#e8e8ed',
-          card: '#1a1a23',
-          border: '#2a2a38',
-        },
-      },
-      backgroundImage: {
-        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
       },
     },
   },
