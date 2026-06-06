@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useCallback, useState } from 'react';
 import type { UserProgress, CourseProgress, QuizAttempt } from '../types';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -92,6 +92,8 @@ const ProgressContext = createContext<ProgressContextValue | null>(null);
 
 export function ProgressProvider({ children }: { children: React.ReactNode }) {
   const [progress, dispatch] = useReducer(progressReducer, {});
+  // Guard: don't write to localStorage until we've read from it first
+  const [hydrated, setHydrated] = useState(false);
 
   // Hydrate from localStorage on mount
   useEffect(() => {
@@ -104,17 +106,21 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
     } catch {
       // Corrupted storage — start fresh
       localStorage.removeItem(STORAGE_KEY);
+    } finally {
+      // Always mark hydrated so the persist effect can start writing
+      setHydrated(true);
     }
   }, []);
 
-  // Persist to localStorage on every change
+  // Persist to localStorage — only AFTER hydration to avoid wiping stored data
   useEffect(() => {
+    if (!hydrated) return;
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
     } catch {
       // Storage quota exceeded — fail silently
     }
-  }, [progress]);
+  }, [progress, hydrated]);
 
   const getCourseProgress = useCallback(
     (courseId: string): CourseProgress =>
