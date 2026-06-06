@@ -1,6 +1,7 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import { ProgressProvider } from './context/ProgressContext';
 import { Navbar } from './components/Navbar';
+import ErrorBoundary from './components/ErrorBoundary';
 import { CatalogPage } from './pages/CatalogPage';
 import { CourseDetailPage } from './pages/CourseDetailPage';
 import { LessonViewerPage } from './pages/LessonViewerPage';
@@ -12,7 +13,8 @@ export default function App() {
       <ProgressProvider>
         <div className="min-h-screen flex flex-col">
           <Navbar />
-          <Routes>
+          <ErrorBoundary>
+            <Routes>
             <Route path="/" element={<CatalogPage />} />
             <Route path="/courses/:id" element={<CourseDetailPage />} />
             <Route path="/courses/:id/learn" element={<LessonViewerPage />} />
@@ -21,15 +23,15 @@ export default function App() {
             <Route
               path="*"
               element={
-                <div className="flex-1 flex items-center justify-center text-gray-500 py-32">
-                  <div className="text-center">
-                    <p className="text-5xl font-extrabold text-gray-700 mb-3">404</p>
-                    <p className="text-gray-400">Page not found.</p>
-                  </div>
+                <div className="flex-1 flex flex-col items-center justify-center py-32 text-center px-4">
+                  <p className="text-6xl font-extrabold text-[#1c1d1f] mb-4">404</p>
+                  <p className="text-[#6a6f73] mb-6">Page not found.</p>
+                  <Link to="/" className="btn-primary">Browse courses</Link>
                 </div>
               }
             />
-          </Routes>
+            </Routes>
+          </ErrorBoundary>
         </div>
       </ProgressProvider>
     </BrowserRouter>
