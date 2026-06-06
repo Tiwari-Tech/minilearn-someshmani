@@ -209,7 +209,7 @@ export function CourseDetailPage() {
               <div className="p-5 space-y-4">
                 <p className="text-3xl font-extrabold text-[#1c1d1f]">Free</p>
                 <button onClick={handleCTA} className="btn-primary w-full py-3 text-base rounded-lg">
-                  {enrolled ? 'Go to course' : 'Enroll now'}
+                  {enrolled ? 'Continue Learning' : 'Enroll now'}
                 </button>
                 {!enrolled && (
                   <p className="text-xs text-[#6a6f73] text-center">30-Day Money-Back Guarantee</p>
